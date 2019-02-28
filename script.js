@@ -19,7 +19,7 @@ function Mario(x, y) {
     this.y = y;
     this.w = 20;
     this.h = 20;
-    this.vx = 1;
+    this.vx = 0;
     this.vy = 0;
     this.color = 'blue';
 
@@ -39,7 +39,7 @@ function Goomba(x, y) {
     this.w = 20;
     this.h = 20;
     this.vx = 0;
-    this.vy = -1;
+    this.vy = 0;
     this.color = 'red';
 
     this.draw = function() {
@@ -89,14 +89,37 @@ blk = new Block(180, 70);
 let objects = [grd, m, g, b, blk];
 // console.log(objects);
 
+function keyDown(e) {
+    let k = e.key;
+    switch (k) {
+        case 'ArrowRight':
+            m.vx = 1;
+            break;
+        case 'ArrowLeft':
+            m.vx = -1;
+            break;
+        case 'ArrowDown':
+            m.vy = 1;
+            break;
+        case 'ArrowUp':
+            m.vy = -1;
+            break;
+        default:
+            break;
+    }
+}
+
+function keyUp() {
+    m.vx = 0;
+    m.vy = 0;  
+} 
+
 function animate() {
     ctx.clearRect(0, 0, 300, 200);
     for (let i = 0; i < objects.length; i++) {
-        objects[i].draw();
         objects[i].move();
+        objects[i].draw();
         // console.log(objects[i]);
     }
     // let currentid = requestAnimationFrame(animate);
 }
-
-animate();
