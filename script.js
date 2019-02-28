@@ -80,28 +80,17 @@ function Block(x, y) {
     this.move = function() {}
 }
 
-let grd = new Ground();
-
-let m = new Mario(30, 100);
-// m.draw();
-
-let g = new Goomba(80, 100);
-// g.draw();
-
-let b = new Beer(130, 100);
-// b.draw();
-
-let blk = new Block(180, 70);
-// blk.draw();
+let grd = new Ground(), 
+m = new Mario(30, 100), 
+g = new Goomba(80, 100), 
+b = new Beer(130, 100), 
+blk = new Block(180, 70);     
 
 let objects = [grd, m, g, b, blk];
-console.log(objects);
+// console.log(objects);
 
 function animate() {
     ctx.clearRect(0, 0, 300, 200);
-    // draw(objects);
-    // move(m);
-    // move(g);
     for (let i = 0; i < objects.length; i++) {
         objects[i].draw();
         objects[i].move();
