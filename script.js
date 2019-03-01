@@ -1,5 +1,14 @@
 let ctx = document.getElementById('canvas').getContext('2d');
 
+let grd = new Ground(), 
+m = new Mario(30, 100), 
+g = new Goomba(80, 100), 
+b = new Beer(130, 100), 
+blk = new Block(180, 70),
+objects = [grd, m, g, b, blk],
+kl = new keyListener(),
+gamestate = 'dead';
+
 function Ground() {
     this.x = 0;
     this.y = 120;
@@ -80,39 +89,31 @@ function Block(x, y) {
     this.move = function() {}
 }
 
-let grd = new Ground(), 
-m = new Mario(30, 100), 
-g = new Goomba(80, 100), 
-b = new Beer(130, 100), 
-blk = new Block(180, 70);     
-
-let objects = [grd, m, g, b, blk];
-// console.log(objects);
-
-function keyDown(e) {
-    let k = e.key;
-    switch (k) {
-        case 'ArrowRight':
-            m.vx = 1;
-            break;
-        case 'ArrowLeft':
-            m.vx = -1;
-            break;
-        case 'ArrowDown':
-            m.vy = 1;
-            break;
-        case 'ArrowUp':
-            m.vy = -1;
-            break;
-        default:
-            break;
+function keyListener() {
+    this.keyDown = function(e) {
+        let k = e.key;
+        switch (k) {
+            case 'ArrowRight':
+                m.vx = 1;
+                break;
+            case 'ArrowLeft':
+                m.vx = -1;
+                break;
+            case 'ArrowDown':
+                m.vy = 1;
+                break;
+            case 'ArrowUp':
+                m.vy = -1;
+                break;
+            default:
+                break;
+        }
+    }
+    this.keyUp = function() {
+        m.vx = 0;
+        m.vy = 0;
     }
 }
-
-function keyUp() {
-    m.vx = 0;
-    m.vy = 0;  
-} 
 
 function animate() {
     ctx.clearRect(0, 0, 300, 200);
@@ -121,5 +122,15 @@ function animate() {
         objects[i].draw();
         // console.log(objects[i]);
     }
-    // let currentid = requestAnimationFrame(animate);
+    switch (gamestate) {
+        case 'running':
+            currentid = requestAnimationFrame(animate);
+            break;
+        case 'dead':
+            currentid = null;
+            break;
+        default:
+            break;
+    }
+    console.log(gamestate);
 }
