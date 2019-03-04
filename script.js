@@ -33,29 +33,45 @@ function newGame() {
 
 function keyListener() {
     this.keyDown = function(e) {
-        if (gamestate === 'dead') {
-            if (e.key === 'Enter') {
-                newGame();
+        let k = (e.key).toUpperCase();
+        switch (gamestate) {
+            case 'dead':
+                if (k === 'ENTER') {
+                    newGame();
+                }
+                break;
+            case 'paused':
+                if (k === 'P') {
+                    gamestate = 'running';
+                    animate();
+                }
+                break;
+            case 'running':
+                switch (k) {
+                    case 'ARROWRIGHT':
+                        mario.vx = 1;
+                        break;
+                    case 'ARROWLEFT':
+                        mario.vx = -1;
+                        break;
+                    case 'ARROWDOWN':
+                        mario.vy = 1;
+                        break;
+                    case 'ARROWUP':
+                        mario.vy = -1;
+                        break;
+                    case 'P':
+                        gamestate = 'paused';
+                        break;
+                    default:
+                        break;
             }
+            default:
+                console.log(k);
+                break;
         }
-        else {
-            switch (e.key) {
-                case 'ArrowRight':
-                    mario.vx = 1;
-                    break;
-                case 'ArrowLeft':
-                    mario.vx = -1;
-                    break;
-                case 'ArrowDown':
-                    mario.vy = 1;
-                    break;
-                case 'ArrowUp':
-                    mario.vy = -1;
-                    break;
-                default:
-                    break;
-            }
-        }
+        // console.log(e.key);
+        // console.log(gamestate);
     }
     this.keyUp = function() {
         if (gamestate === 'running') {
@@ -138,7 +154,7 @@ function Goomba(x, y) {
     this.y = y;
     this.width = 20;
     this.height = 20;
-    this.vx = 0;
+    this.vx = -1;
     this.vy = 0;
     this.color = 'red';
     this.name = 'goomba';
@@ -202,36 +218,40 @@ function goombaCollision() {
     for (let i = 0; i < goombas.length; i++) {
         for (let j = 0; j < blocks.length; j++) {
             if (collision(goombas[i], blocks[j])) {
-                console.log('hej');
                 goombas[i].vx *= -1;
             }
         }
     }
 }
 
-function animate() {
-    ctx.clearRect(0, 0, 300, 200);
-    // newGame();
-    for (let i = 0; i < objects.length; i++) {
-        objects[i].move();
-        objects[i].draw();
-    }
+function checkGamestate() {
     switch (gamestate) {
         case 'running':
             currentid = requestAnimationFrame(animate);
             break;
-        case 'dead':
-            currentid = null;
-            break;
         case 'drunk':
-            // currentid = null;
             currentid = requestAnimationFrame(animate);
             mario.color = 'cyan';
             mario.x += mario.vx;
             break;
+        case 'dead':
+            currentid = null;
+            break;
+        case 'paused':
+            currentid = null;
+            break;
         default:
             break;
     }
+}
+
+function animate() {
+    ctx.clearRect(0, 0, 300, 200);
+    for (let i = 0; i < objects.length; i++) {
+        objects[i].move();
+        objects[i].draw();
+    }
+    checkGamestate();
     marioCollision();
     goombaCollision();
 }
