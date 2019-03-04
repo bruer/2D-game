@@ -1,57 +1,67 @@
 let ctx = document.getElementById('canvas').getContext('2d');
 
-let gamestate = 'running', 
-kl = new keyListener(),
-ground = new Ground(), 
-mario = new Mario(), 
-beer = new Beer(100, 100),
+let kl = new keyListener();
+let gamestate = 'dead'; 
+let mario = null;
+let objects = [];
 
-objects = [
-    ground,
-    mario,
-    // beer,
-    new Goomba(135, 100),
-    new Goomba(280, 100),
-    new Block(50, 70),
-    new Block(200, 70)
-],
-blocks = [],
-goombas = [];
-
-for (let i = 0; i < objects.length; i++) {
-    if (objects[i].name === 'block') {
-        blocks.push(objects[i]);
+function newGame() {
+    gamestate = 'running';
+    blocks = [];
+    goombas = [];
+    objects = [
+        mario = new Mario(),
+        new Ground(),
+        new Beer(0, 0),
+        new Goomba(120, 100),
+        new Goomba(280, 100),
+        new Block(50, 70),
+        new Block(200, 70)
+    ];
+    
+    for (let i = 0; i < objects.length; i++) {
+        if (objects[i].name === 'block') {
+            blocks.push(objects[i]);
+        }
+        if (objects[i].name === 'goomba') {
+            goombas.push(objects[i]);
+        }
     }
-    if (objects[i].name === 'goomba') {
-        goombas.push(objects[i]);
-    }
+    console.log(goombas);
+    animate();
 }
 
 function keyListener() {
     this.keyDown = function(e) {
-        let k = e.key;
-        switch (k) {
-            case 'ArrowRight':
-                mario.vx = 1;
-                break;
-            case 'ArrowLeft':
-                mario.vx = -1;
-                break;
-            case 'ArrowDown':
-                mario.vy = 1;
-                break;
-            case 'ArrowUp':
-                mario.vy = -1;
-                break;
-            default:
-                break;
+        if (gamestate === 'dead') {
+            if (e.key === 'Enter') {
+                newGame();
+            }
         }
-        // console.log('mario.x=' + (mario.x + mario.width));
-        // console.log('mario.y=' + (mario.y + mario.height));
+        else {
+            switch (e.key) {
+                case 'ArrowRight':
+                    mario.vx = 1;
+                    break;
+                case 'ArrowLeft':
+                    mario.vx = -1;
+                    break;
+                case 'ArrowDown':
+                    mario.vy = 1;
+                    break;
+                case 'ArrowUp':
+                    mario.vy = -1;
+                    break;
+                default:
+                    break;
+            }
+        }
     }
     this.keyUp = function() {
-        mario.vx = 0;
-        mario.vy = 0;
+        if (gamestate === 'running') {
+            mario.vx = 0;
+            mario.vy = 0;
+        }
     }
 }
 
@@ -160,7 +170,7 @@ function marioCollision() {
         if (objects[i].name !== 'mario' && collision(mario, objects[i])) {
             switch (objects[i].name) {
                 case 'ground':
-                    mario.y = ground.y - mario.height;
+                    mario.y = objects[i].y - mario.height;
                     break;
                 case 'block':
                     if (mario.x + mario.width <= objects[i].x + 1 &&
@@ -192,6 +202,7 @@ function goombaCollision() {
     for (let i = 0; i < goombas.length; i++) {
         for (let j = 0; j < blocks.length; j++) {
             if (collision(goombas[i], blocks[j])) {
+                console.log('hej');
                 goombas[i].vx *= -1;
             }
         }
@@ -200,6 +211,7 @@ function goombaCollision() {
 
 function animate() {
     ctx.clearRect(0, 0, 300, 200);
+    // newGame();
     for (let i = 0; i < objects.length; i++) {
         objects[i].move();
         objects[i].draw();
