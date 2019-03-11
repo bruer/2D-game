@@ -1,12 +1,14 @@
-let ctx = document.getElementById('canvas').getContext('2d');
+let canvas = document.getElementById('canvas');
+let ctx = canvas.getContext('2d');
 
 let kl = new keyListener();
 let gamestate = 'dead';
-let inAir = false;
 let mario = null;
-let objects = [];
 let ground = null;
-let numberOfObjects = 0;
+// let block = null;
+// let beer = null;
+// let goomba = null;
+let objects = [];
 
 newGame();
 
@@ -14,15 +16,14 @@ function newGame() {
     gamestate = 'running';
     blocks = [];
     objects = [
-        mario = new Mario(),
-        ground = new Ground(),
-        new Goomba(140, 100),
+        mario = new Mario(130, 120, 20, 20),
+        ground = new Ground(140, 60),
+        new Block(250, 90, 40, 50),
+        new Block(500, 90, 40, 50),
+        new Goomba(300, 120),
         // new Goomba(280, 100),
-        new Block(60, 70),
-        new Block(200, 70),
-        new Beer(260, 100)
+        new Beer(600, 120),
     ];
-    numberOfObjects = objects.length - 1;
     for (let i = 0; i < objects.length; i++) {
         if (objects[i].name === 'block') {
             blocks.push(objects[i]);
@@ -32,10 +33,10 @@ function newGame() {
 }
 
 function animate() {
-    ctx.clearRect(0, 0, 300, 200);
+    ctx.clearRect(0, 0, canvas.width, 200);
     for (let i = 0; i < objects.length; i++) {
-        objects[i].move();
         objects[i].draw();
+        objects[i].move();
     }
     checkGamestate();
 }
@@ -47,28 +48,16 @@ function checkGamestate() {
             break;
         case 'drunk':
             currentid = requestAnimationFrame(animate);
-            objects = objects.slice(0, numberOfObjects);
             break;
         case 'dead':
             currentid = null;
             break;
         case 'paused':
             currentid = null;
+            console.log(gamestate);
             break;
         default:
             break;
-    }
-}
-
-function collision(o1, o2) {
-    if (o1.x <= o2.x + o2.width &&
-        o1.x + o1.width >= o2.x &&
-        o1.y <= o2.y + o2.height &&
-        o1.y + o1.height >= o2.y) {
-        return true;
-    }
-    else {
-        return false;
     }
 }
 
@@ -91,27 +80,17 @@ function keyListener() {
         else {
             switch (k) {
                 case 'ARROWRIGHT':
-                    if (mario.inAir()) {
-                        mario.vmax = 3;
-                    }
                     mario.vx = mario.vmax;
                     break;
                 case 'ARROWLEFT':
-                    if (mario.inAir()){
-                        mario.vmax = 3;
-                    }
                     mario.vx = mario.vmax * -1;
                     break;
                 case 'ARROWDOWN':
-                    // mario.vy = 1;
                     break;
                 case 'ARROWUP':
-                    // if (!mario.inAir()) {
-                    //     mario.jump();
-                    // }
                     break;
                 case ' ':
-                    if (!mario.inAir()) {
+                    if (mario.onGround()) {
                         mario.jump();
                     }
                     break;
@@ -119,8 +98,23 @@ function keyListener() {
                     gamestate = 'paused';
                     break;
                 default:
+                    console.log(k);
                     break;
             }
+            // console.log('mario x=' + mario.x + ' mario cam x=' + mario.camX);
+            
+            // console.log('block x=' + block.x + ' block cam x=' + block.camX);
+
+            // console.log('mario y=' + mario.y + ' mario cam y=' + mario.camY);
+            
+            // console.log('block y=' + block.y + ' block cam y=' + block.camY);
+
+            // console.log('ground y=' + ground.y + 
+            // ' ground cam y=' + ground.camY);
+            
+            // console.log('beer y=' + beer.y + ' beer cam y=' + beer.camY);
+
+            // console.log('\n');
         }
     }
     this.keyUp = function() {
@@ -130,108 +124,80 @@ function keyListener() {
     }
 }
 
-function Ground() {
-    this.x = 0;
-    this.y = 120;
-    this.width = 300;
-    this.height = 30;
-    this.color = 'green';
-    this.name = 'ground';
-    
-    this.draw = function() {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+function filterObject(os, s) {
+    let fos = [];
+    for (let i = 0; i < os.length; i ++) {
+        if (os[i].name !== s) {
+            fos.push(os[i]);
+        }
     }
-    this.move = function() {}
+    return fos;
 }
 
-function Block(x, y) {
-    this.x = x;
-    this.y = y;
-    this.width = 40;
-    this.height = 50;
-    this.color = '#804848';
-    this.name = 'block';
-
-    this.draw = function() {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-    }
-    this.move = function() {}
-}
-
-function Beer(x, y) {
-    this.x = x;
-    this.y = y;
-    this.width = 20;
-    this.height = 20;
-    this.color = 'yellow';
-    this.name = 'beer';
-
-    this.draw = function() {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-    }
-    this.move = function() {}
-}
-
-function Goomba(x, y) {
-    this.x = x;
-    this.y = y;
-    this.width = 20;
-    this.height = 20;
-    this.vx = -1;
-    this.vy = 0;
-    this.color = 'red';
-    this.name = 'goomba';
-
-    this.draw = function() {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-    }
-    this.move = function() {
-        this.x += this.vx;
-        this.y += this.vy;
-        this.collision();
-    }
-    this.collision = function() {
-        for (let i = 0; i < blocks.length; i++) {
-            if (collision(this, blocks[i])) {
-                this.vx *= -1;
-            }
+function findObject(os, s) {
+    for (let i = 0; i < os.length; i++) {
+        if (os[i].name === s) {
+            return os[i];
         }
     }
 }
 
-function Mario() {
-    this.x = 20;
-    this.y = 100;
-    this.width = 20;
-    this.height = 20;
+function collision(o1, o2) {
+    return o1.x <= o2.x + o2.width &&
+           o1.x + o1.width >= o2.x &&
+           o1.y <= o2.y + o2.height &&
+           o1.y + o1.height >= o2.y;
+}
+
+function cameraX(x) {
+    return x - mario.x + mario.cx;
+}
+
+function cameraY(y) {
+    return y - mario.y + mario.cy;
+}
+
+function draw(c, cx, cy, w, h) {
+    ctx.fillStyle = c;
+    ctx.fillRect(cx, cy, w, h);
+}
+
+function Mario(x, y, w, h) {
+    this.x = x;
+    this.y = y;
+    this.width = w;
+    this.height = h;
 
     this.vx = 0;
     this.vy = 0;
     this.vmax = 2;
     this.g = 0;
-
+    
     this.color = 'blue';
     this.name = 'mario';
 
+    this.cx = this.x;
+    this.cy = this.y;
+
     this.draw = function() {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        draw(this.color, this.cx, this.cy, this.width, this.height);
     }
+
     this.move = function() {
+
+        if (!this.onGround() && gamestate !== 'drunk') {
+            this.vmax = 3;
+        }
 
         this.gforce();
 
         this.y += this.vy;
 
-        if (this.x >= 0) {
+        if (this.x >= 130) {
             this.x += this.vx;
         }
         else {
-            this.x = 0;
+            this.x = 130;
         }
         
         if (this.y + this.height < ground.y) {
@@ -245,28 +211,8 @@ function Mario() {
         this.otherCollision();
     }
 
-    this.gforce = function() {
-        this.g = 0.5;
-    }
-
-    this.jump = function() {
-        this.vy = -10;
-    }
-
-    this.feets = function() {
-        return this.y + this.height;
-    }
-
-    this.widthRight = function() {
-        return this.x + this.width;
-    }
-
-    this.widthLeft = function() {
-        return this.x;
-    }
-
     this.collision = function() {
-        let os = objects.slice(1, objects.length);
+        let os = filterObject(objects, 'mario');
         let collisions = [];
         for (let i = 0; i < os.length; i++) {
             if (collision(this, os[i])) {
@@ -285,14 +231,14 @@ function Mario() {
             }
         }
         if (b !== null) {
-            if (this.widthRight() <= b.x + this.vmax) {
+            if (this.x + this.width <= b.x + this.vmax) {
                 this.x = b.x - this.width;
             }
-            if (this.widthLeft() >= b.x + b.width - this.vmax) {
+            if (this.x >= b.x + b.width - this.vmax) {
                 this.x = b.x + b.width;
             }
-            if (this.widthRight() > b.x + this.vmax && 
-            this.widthLeft() < b.x + b.width - this.vmax) {
+            if (this.x + this.width > b.x + this.vmax && 
+            this.x < b.x + b.width - this.vmax) {
                 this.g = 0;
                 this.vy = 0;
                 this.y = b.y - this.height - this.vy;
@@ -317,18 +263,119 @@ function Mario() {
         }
     }
 
-    this.inAir = function() {
-        if (this.collision().length > 0) { return false; }
-        else { return true; }
+    this.gforce = function() {
+        this.g = 0.5;
+    }
+
+    this.jump = function() {
+        this.vy = -10;
     }
 
     this.onGround = function() {
-        if (this.collision().length > 0) { return true; }
-        else { return false; }
+        return this.collision().length > 0;  
     }
 
     this.drunk = function() {
         this.color = 'cyan';
-        this.vmax = 5;
+        this.vmax = 10;
+        objects = filterObject(objects, 'beer');
+    }
+}
+
+function Ground(y, h) {
+    this.x = 0;
+    this.y = y;
+    this.width = canvas.width;
+    this.height = h;
+    this.color = 'green';
+    this.name = 'ground';
+
+    this.cx;
+    this.cy;
+
+    this.draw = function() {
+        draw(this.color, this.x, this.cy, this.width, this.height);
+    }
+
+    this.move = function() {
+        this.cy = cameraY(this.y);
+        this.width = canvas.width + mario.x;
+    }
+}
+
+function Block(x, y, w, h) {
+    this.x = x;
+    this.y = y;
+    this.width = w;
+    this.height = h;
+    this.color = '#804848';
+    this.name = 'block';
+
+    this.cx;
+    this.cy;
+
+    this.draw = function() {
+        draw(this.color, this.cx, this.cy, this.width, this.height);
+    }
+
+    this.move = function() {
+        this.cx = cameraX(this.x);
+        this.cy = cameraY(this.y);
+    }
+}
+
+function Goomba(x, y) {
+    this.x = x;
+    this.y = y;
+    this.width = 20;
+    this.height = 20;
+    this.vx = -1;
+    this.vy = 0;
+    this.color = 'red';
+    this.name = 'goomba';
+
+    this.cx;
+    this.cy;
+
+    this.draw = function() {
+        draw(this.color, this.cx, this.cy, this.width, this.height);
+    }
+
+    this.move = function() {
+        this.cx = cameraX(this.x);
+        this.cy = cameraY(this.y);
+        
+        this.x += this.vx;
+        this.y += this.vy;
+        this.collision();
+    }
+    
+    this.collision = function() {
+        for (let i = 0; i < blocks.length; i++) {
+            if (collision(this, blocks[i])) {
+                this.vx *= -1;
+            }
+        }
+    }
+}
+
+function Beer(x, y) {
+    this.x = x;
+    this.y = y;
+    this.width = 20;
+    this.height = 20;
+    this.color = 'yellow';
+    this.name = 'beer';
+
+    this.cx;
+    this.cy;
+
+    this.draw = function() {
+        draw(this.color, this.cx, this.cy, this.width, this.height);
+    }
+
+    this.move = function() {
+        this.cx = cameraX(this.x);
+        this.cy = cameraY(this.y);
     }
 }
