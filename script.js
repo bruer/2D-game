@@ -5,12 +5,7 @@ let kl = new keyListener();
 let gamestate = 'dead';
 let mario = null;
 let ground = null;
-// let block = null;
-// let beer = null;
-// let goomba = null;
 let objects = [];
-
-newGame();
 
 function newGame() {
     gamestate = 'running';
@@ -18,11 +13,16 @@ function newGame() {
     objects = [
         mario = new Mario(130, 120, 20, 20),
         ground = new Ground(140, 60),
-        new Block(250, 90, 40, 50),
-        new Block(500, 90, 40, 50),
-        new Goomba(300, 120),
-        // new Goomba(280, 100),
-        new Beer(600, 120),
+        new Block(200, 90, 100, 20),
+        new Block(500, 50, 100, 20),
+        new Block(850, 90, 100, 20),
+        new Block(400, 90, 40, 50),
+        new Block(660, 90, 40, 50),
+        new Block(1100, 90, 40, 50),
+        new Goomba(350, 120),
+        new Goomba(550, 120),
+        new Goomba(970, 120),
+        new Beer(890, 70),
     ];
     for (let i = 0; i < objects.length; i++) {
         if (objects[i].name === 'block') {
@@ -51,10 +51,11 @@ function checkGamestate() {
             break;
         case 'dead':
             currentid = null;
+            console.log(gamestate);
+            alert('YOU DIED (press enter to continue)');
             break;
         case 'paused':
             currentid = null;
-            console.log(gamestate);
             break;
         default:
             break;
@@ -74,6 +75,8 @@ function keyListener() {
         else if (gamestate === 'paused') {
             if (k === 'P') {
                 gamestate = 'running';
+                console.log(gamestate);
+                alert('game unpaused');
                 animate();
             }
         }
@@ -91,30 +94,18 @@ function keyListener() {
                     break;
                 case ' ':
                     if (mario.onGround()) {
-                        mario.jump();
+                        mario.vy = -8;
                     }
                     break;
                 case 'P':
                     gamestate = 'paused';
+                    console.log(gamestate);
+                    alert('game paused');
                     break;
                 default:
                     console.log(k);
                     break;
             }
-            // console.log('mario x=' + mario.x + ' mario cam x=' + mario.camX);
-            
-            // console.log('block x=' + block.x + ' block cam x=' + block.camX);
-
-            // console.log('mario y=' + mario.y + ' mario cam y=' + mario.camY);
-            
-            // console.log('block y=' + block.y + ' block cam y=' + block.camY);
-
-            // console.log('ground y=' + ground.y + 
-            // ' ground cam y=' + ground.camY);
-            
-            // console.log('beer y=' + beer.y + ' beer cam y=' + beer.camY);
-
-            // console.log('\n');
         }
     }
     this.keyUp = function() {
@@ -170,8 +161,8 @@ function Mario(x, y, w, h) {
 
     this.vx = 0;
     this.vy = 0;
-    this.vmax = 2;
-    this.g = 0;
+    this.vmax = 3;
+    this.g = 0.4;
     
     this.color = 'blue';
     this.name = 'mario';
@@ -185,30 +176,29 @@ function Mario(x, y, w, h) {
 
     this.move = function() {
 
-        if (!this.onGround() && gamestate !== 'drunk') {
-            this.vmax = 3;
-        }
-
-        this.gforce();
-
+        this.x += this.vx;
         this.y += this.vy;
+        this.vy += this.g; 
 
-        if (this.x >= 130) {
-            this.x += this.vx;
-        }
-        else {
-            this.x = 130;
-        }
-        
-        if (this.y + this.height < ground.y) {
-            this.vy += this.g;
-        }
-        else {
-            this.y = ground.y - this.height;
-        }
-
+        this.levelEdgeCollision();
+        this.groundCollision();
         this.blockCollision();
         this.otherCollision();
+    }
+
+    this.levelEdgeCollision = function() {
+        if (this.x < 130) {
+            this.x = 130;
+        }
+        if (this.x + this.width > 1140) {
+            this.x = 1140 - this.width;
+        }
+    }
+
+    this.groundCollision = function() {
+        if (this.y + this.height > ground.y) {
+            this.y = ground.y - this.height;
+        }
     }
 
     this.collision = function() {
@@ -239,9 +229,14 @@ function Mario(x, y, w, h) {
             }
             if (this.x + this.width > b.x + this.vmax && 
             this.x < b.x + b.width - this.vmax) {
-                this.g = 0;
-                this.vy = 0;
-                this.y = b.y - this.height - this.vy;
+                if (this.y >= b.y) {
+                    this.vy = 0;
+                    this.y = b.y + b.height + 0.1;
+                }
+                else {
+                    this.vy = 0;
+                    this.y = b.y - this.height;
+                }
             }
         }
     }
@@ -261,14 +256,6 @@ function Mario(x, y, w, h) {
                     break;
             }
         }
-    }
-
-    this.gforce = function() {
-        this.g = 0.5;
-    }
-
-    this.jump = function() {
-        this.vy = -10;
     }
 
     this.onGround = function() {
