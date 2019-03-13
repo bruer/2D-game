@@ -2,10 +2,10 @@ let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
 
 let kl = new keyListener();
-let gamestate = 'DEAD';
 let mario = null;
 let ground = null;
 let objects = [];
+let gamestate = 'DEAD';
 
 // Ny spelrunda
 
@@ -28,7 +28,7 @@ function newGame() {
         
         // Block som "flyter" i luften
         new Block(200, 90, 100, 20), 
-        new Block(500, 50, 100, 20),
+        new Block(500, 65, 100, 20),
         new Block(850, 90, 100, 20),
 
         // Block som är på marken
@@ -44,6 +44,7 @@ function newGame() {
         // Öl som gör spelaren full
         new Beer(890, 70)
     ];
+
 
     // Fyll listan för block med block-objekten
     for (let i = 0; i < objects.length; i++) {
@@ -90,14 +91,6 @@ function checkGamestate() {
         // Om spelet är pausat stoppas animations-loopen
         case 'PAUSED':
             cancelAnimationFrame(currentid);
-            break;
-        
-        // Om Mario är berusad anropas hans drunk-metod. För att inte flyga
-        // utanför banan måste han befinna sig marken när metoden anropas.
-        case 'DRUNK':
-            if (mario.onGround()) {
-                mario.drunk();
-            }
             break;
         
         default:
@@ -159,7 +152,7 @@ function keyListener() {
                 // ett negativt värde och Mario hoppar upp i luften.
                 case ' ':
                     if (mario.onGround()) {
-                        mario.vy = -8;
+                        mario.vy = -7;
                     }
                     break;
 
@@ -266,6 +259,7 @@ function Mario(x, y, w, h) {
     
     this.color = 'blue';
     this.name = 'mario';
+    this.sober = true;
 
     // Kameravariabler som tilldelas koordinatvärderna för objektets
     // startposition. Dessa värden är hela tiden statiska och anger var på 
@@ -296,6 +290,13 @@ function Mario(x, y, w, h) {
         this.groundCollision();
         this.blockCollision();
         this.otherCollision();
+
+        // Om Mario är berusad anropas hans drunk-metod. För att han inte ska
+        // flyga utanför banan behöver hans befinns sig på marken när anropet
+        // sker.
+        if (!this.sober && this.onGround()) {
+            this.drunk();
+        }
     }
 
     // Hindrar objektet att hamna utanför banans start- och slutområde
@@ -406,12 +407,12 @@ function Mario(x, y, w, h) {
                     gamestate = 'DEAD';
                     break;
 
-                // Om Mario kolliderar med öl-objektet får spelet ett berusat 
-                // tillstånd. Sedan tas ölen bort från listan med övriga objekt
-                // genom att anropa filterObject-metoden och ölen är inte 
+                // Om Mario kolliderar med öl-objektet är han inte längre
+                // nykter. Ölen tas bort från listan med objekt som ska ritas
+                // upp genom att anropa filterObject-metoden och är inte 
                 // längre synlig.
                 case 'beer':
-                    gamestate = 'DRUNK';
+                    this.sober = false;
                     objects = filterObject(objects, 'beer');
                     break;
                 
@@ -434,7 +435,7 @@ function Mario(x, y, w, h) {
     this.drunk = function() {
         this.color = 'cyan';
         this.vmax = 10;
-        this.vy = -5;
+        this.vy = -3;
     }
 }
 
