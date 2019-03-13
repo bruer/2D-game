@@ -1,5 +1,14 @@
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
+let bgm = document.getElementById('music');
+
+function playMusic() {
+    bgm.play();
+}
+
+function pauseMusic() {
+    bgm.pause();
+}
 
 let kl = new keyListener();
 let gamestate = 'DEAD';
@@ -12,6 +21,8 @@ let objects = [];
 function newGame() {
 
     gamestate = 'RUNNING';
+
+    playMusic();
 
     // Initiera en array för block-objekt som används av Goomba-objekten för
     // upptäcka en kollision med ett block
@@ -37,7 +48,7 @@ function newGame() {
         new Block(1100, 90, 40, 50),
 
         // Fiender
-        new Goomba(350, 120),
+        // new Goomba(350, 120),
         new Goomba(550, 120),
         new Goomba(970, 120),
 
@@ -129,6 +140,7 @@ function keyListener() {
         else if (gamestate === 'PAUSED' && k === 'P') {
             gamestate = 'RUNNING';
             animate();
+            playMusic();
             console.log(gamestate);
             alert('game unpaused');
         }
@@ -166,6 +178,7 @@ function keyListener() {
                 // Om spelaren trycker på P-tangenten pausas spelet
                 case 'P':
                     gamestate = 'PAUSED';
+                    pauseMusic();
                     console.log(gamestate);
                     alert('game paused');
                     break;
