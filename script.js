@@ -1,12 +1,14 @@
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
-let bgm = document.getElementById('music');
 
 let kl = new keyListener();
 let mario = null;
 let ground = null;
 let objects = [];
 let gamestate = 'DEAD';
+let startEdge = 300;
+let endEdge = 3400;
+
 
 // Ny spelrunda
 
@@ -22,28 +24,28 @@ function newGame() {
     objects = [
 
         // Objektet som spelaren har kontrollen över
-        mario = new Mario(130, 120, 20, 20),
+        mario = new Mario(300, 360, 60, 60),
 
         // Marken som banan är uppbyggd på
-        ground = new Ground(),
+        ground = new Ground(420, 180),
         
         // Block som "flyter" i luften
-        new Block(200, 90, 100, 20), 
-        new Block(500, 65, 100, 20),
-        new Block(850, 90, 100, 20),
+        new Block(600, 270, 300, 60), 
+        new Block(1500, 190, 300, 60),
+        new Block(2570, 270, 300, 60),
 
         // Block som är på marken
-        new Block(400, 90, 40, 50),
-        new Block(660, 90, 40, 50),
-        new Block(1100, 90, 40, 50),
+        new Block(1200, 270, 100, 150),
+        new Block(2000, 270, 100, 150),
+        new Block(3300, 270, 100, 150),
 
         // Fiender
-        new Goomba(350, 120),
-        new Goomba(550, 120),
-        new Goomba(970, 120),
+        new Goomba(1000, 360, 60, 60),
+        new Goomba(1600, 360, 60, 60),
+        new Goomba(2650, 360, 60, 60),
 
         // Öl som gör spelaren full
-        new Beer(890, 70)
+        new Beer(2690, 210, 60, 60)
     ];
 
 
@@ -61,7 +63,7 @@ function newGame() {
 function animate() {
 
     // Sudda ut bilden på canvasen för att kunna skapa en ny bild
-    ctx.clearRect(0, 0, canvas.width, 200);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Rita upp och uppdatera varje objekts position
     for (let i = 0; i < objects.length; i++) {
@@ -153,7 +155,7 @@ function keyListener() {
                 // ett negativt värde och Mario hoppar upp i luften.
                 case ' ':
                     if (mario.onGround()) {
-                        mario.vy = -7;
+                        mario.vy = -20;
                     }
                     break;
 
@@ -253,10 +255,10 @@ function Mario(x, y, w, h) {
     // Hastighetsvariabler
     this.vx = 0;
     this.vy = 0;
-    this.vmax = 3;
+    this.vmax = 10;
 
     // Gravitation
-    this.g = 0.4;
+    this.g = 1.2;
     
     this.color = 'blue';
     this.name = 'mario';
@@ -302,11 +304,11 @@ function Mario(x, y, w, h) {
 
     // Hindrar objektet att hamna utanför banans start- och slutområde
     this.levelEdgeCollision = function() {
-        if (this.x < 130) {
-            this.x = 130;
+        if (this.x < startEdge) {
+            this.x = startEdge;
         }
-        if (this.x + this.width > 1140) {
-            this.x = 1140 - this.width;
+        if (this.x + this.width > endEdge) {
+            this.x = endEdge - this.width;
         }
     }
 
@@ -435,17 +437,17 @@ function Mario(x, y, w, h) {
     // rör sig snabbare och börjar hoppa okontrollerat. 
     this.drunk = function() {
         this.color = 'cyan';
-        this.vmax = 10;
-        this.vy = -3;
+        this.vmax = 30;
+        this.vy = -7;
     }
 }
 
-function Goomba(x, y) {
+function Goomba(x, y, w, h) {
     this.x = x;
     this.y = y;
-    this.width = 20;
-    this.height = 20;
-    this.vx = -1; // Objektet rör sig i vänster riktning med en fast hastighet
+    this.width = w;
+    this.height = h;
+    this.vx = -3; // Objektet rör sig i vänster riktning med en fast hastighet
     this.color = 'red';
     this.name = 'goomba';
 
@@ -486,11 +488,11 @@ function Goomba(x, y) {
     }
 }
 
-function Ground() {
+function Ground(y, h) {
     this.x = 0;
-    this.y = 140;
+    this.y = y;
     this.width = canvas.width; // Marken ska vara lika bred som canvasen
-    this.height = 60;
+    this.height = h;
     this.color = 'seagreen';
     this.name = 'ground';
 
@@ -538,11 +540,11 @@ function Block(x, y, w, h) {
     }
 }
 
-function Beer(x, y) {
+function Beer(x, y, w, h) {
     this.x = x;
     this.y = y;
-    this.width = 20;
-    this.height = 20;
+    this.width = w;
+    this.height = h;
     this.color = 'yellow';
     this.name = 'beer';
 
